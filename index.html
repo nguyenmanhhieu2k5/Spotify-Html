@@ -965,7 +965,10 @@ function renderArtists() {
   grid.style.display = 'grid';
   grid.innerHTML = artists.map((a, i) => `
     <div class="card" onclick="openArtist('${a.id}')">
-      <div class="card-img round ${GRADS[i%10]}" style="font-size:52px">${a.name[0]}
+      <div class="card-img round ${a.avatar_url ? '' : GRADS[i%10]}" style="${a.avatar_url ? '' : 'font-size:52px'}">
+        ${a.avatar_url
+          ? `<img src="${a.avatar_url}" alt="${a.name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`
+          : a.name[0]}
         <div class="card-play"><svg width="18" height="18" viewBox="0 0 24 24" fill="black"><polygon points="5,3 19,12 5,21"/></svg></div>
       </div>
       <div class="card-name">${a.name}</div>
@@ -976,10 +979,14 @@ function renderArtists() {
 // ── SONG ROW HTML ─────────────────────────────────────────────────────────
 function songRowHTML(s, i, clickFn, forceList) {
   const list = forceList !== undefined ? forceList : songs;
+  const thumbContent = s.cover_url
+    ? `<img src="${s.cover_url}" alt="${s.title}" style="width:100%;height:100%;object-fit:cover;border-radius:6px"/>`
+    : MUSIC[i%10];
+  const thumbClass = s.cover_url ? '' : GRADS[i%10];
   return `<div class="song-row" id="row-${i}" onclick="${clickFn}(${i})">
     <div class="song-num" id="num-${i}">${i+1}</div>
     <div class="song-info">
-      <div class="song-thumb ${GRADS[i%10]}">${MUSIC[i%10]}</div>
+      <div class="song-thumb ${thumbClass}" style="${s.cover_url ? 'overflow:hidden' : ''}">${thumbContent}</div>
       <div style="min-width:0">
         <div class="song-name">${s.title}</div>
         <div class="song-meta" id="ar-${i}" onclick="event.stopPropagation();openArtist('${s.artist_id}')">${s.artist_id}</div>
@@ -1038,7 +1045,9 @@ async function openArtist(id) {
     ? artistSongs.map((s, i) => `<div class="song-row" onclick="playArtistSong(${i})">
         <div class="song-num">${i+1}</div>
         <div class="song-info">
-          <div class="song-thumb ${GRADS[i%10]}">${MUSIC[i%10]}</div>
+          <div class="song-thumb ${s.cover_url ? '' : GRADS[i%10]}" style="${s.cover_url ? 'overflow:hidden' : ''}">
+            ${s.cover_url ? `<img src="${s.cover_url}" alt="${s.title}" style="width:100%;height:100%;object-fit:cover;border-radius:6px"/>` : MUSIC[i%10]}
+          </div>
           <div><div class="song-name">${s.title}</div><div class="song-meta">${a.name}</div></div>
         </div>
         <div class="song-genre">${s.genre||'—'}</div>
@@ -1277,7 +1286,15 @@ async function selectSong(idx) {
   document.getElementById('p-title').textContent = s.title;
   document.getElementById('p-artist').textContent = s.artist_id;
   const cover = document.getElementById('p-cover');
-  cover.className = `p-cover ${grad}`; cover.innerHTML = MUSIC[idx%10];
+  if (s.cover_url) {
+    cover.className = 'p-cover';
+    cover.innerHTML = `<img src="${s.cover_url}" alt="${s.title}" style="width:100%;height:100%;object-fit:cover;border-radius:8px"/>`;
+    cover.style.background = 'none';
+  } else {
+    cover.className = `p-cover ${grad}`;
+    cover.innerHTML = MUSIC[idx%10];
+    cover.style.background = '';
+  }
   document.getElementById('t-total').textContent = fmtMs(s.duration_ms);
   document.getElementById('prog-fill').style.width = '0%';
   document.getElementById('t-cur').textContent = '0:00';
