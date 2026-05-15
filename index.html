@@ -1142,22 +1142,28 @@ function syncLyricsPlayer() {
 
   // Cover
   const lvc = document.getElementById('lv-cover');
-  lvc.className = `lv-cover ${grad}`;
-  lvc.innerHTML = MUSIC[curIdx % 10];
-
-  // BG blur
-  const gradMap = {
-    gr1:'#1e3a5f', gr2:'#14532d', gr3:'#4c1d95', gr4:'#7c2d12',
-    gr5:'#0f172a', gr6:'#831843', gr7:'#713f12', gr8:'#134e4a',
-    gr9:'#1e1b4b', gr10:'#450a0a'
-  };
-  document.getElementById('lv-bg').style.background = gradMap[grad] || '#1e1b4b';
+  if (s.cover_url) {
+    lvc.className = 'lv-cover';
+    lvc.innerHTML = `<img src="${s.cover_url}" alt="${s.title}" style="width:100%;height:100%;object-fit:cover;border-radius:16px"/>`;
+    lvc.style.background = 'none';
+    // BG blur dùng ảnh cover
+    document.getElementById('lv-bg').style.cssText = `position:absolute;inset:0;z-index:0;background-image:url('${s.cover_url}');background-size:cover;background-position:center;filter:blur(80px) brightness(.25);transform:scale(1.1)`;
+  } else {
+    const gradMap = {
+      gr1:'#1e3a5f', gr2:'#14532d', gr3:'#4c1d95', gr4:'#7c2d12',
+      gr5:'#0f172a', gr6:'#831843', gr7:'#713f12', gr8:'#134e4a',
+      gr9:'#1e1b4b', gr10:'#450a0a'
+    };
+    lvc.className = `lv-cover ${grad}`;
+    lvc.innerHTML = MUSIC[curIdx % 10];
+    lvc.style.background = '';
+    document.getElementById('lv-bg').style.cssText = `position:absolute;inset:0;z-index:0;background:${gradMap[grad]||'#1e1b4b'};filter:blur(80px) brightness(.25);transform:scale(1.1)`;
+  }
 
   document.getElementById('lv-song-name').textContent = s.title;
   document.getElementById('lv-artist-name').textContent = document.getElementById('p-artist').textContent;
   document.getElementById('lv-t-total').textContent = fmtMs(s.duration_ms);
 
-  // Sync play state
   updateLvPlayBtn();
   updateLvShuffle();
   updateLvRepeat();
